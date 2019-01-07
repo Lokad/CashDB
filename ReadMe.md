@@ -46,7 +46,7 @@ Under Linux,
 * Run `./build-releash.sh`
 
 A C/C++ client library `cashdbclient` is produced by the project `/src/CashDB.Client`.
-Check-out `/src/CashDB.Client/cashdb.h` for the intended API of CashDB.
+Check-out [/src/CashDB.Client/cashdb.h](https://github.com/Lokad/CashDB/blob/master/src/CashDB.Client/cashdb.h) for the intended API of CashDB.
 
 ## Motivation
 
