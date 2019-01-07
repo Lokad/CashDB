@@ -1,4 +1,4 @@
-# Tests projects of CashDB
+# Supporting projects of CashDB
 
 This folder contains:
 

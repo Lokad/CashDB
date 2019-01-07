@@ -1,6 +1,6 @@
-# Supporting projects for CashDB
+# Dependencies of CashDB
 
-This folder contains supporting projects for CashDB. Those projects
+This folder contains dependent projects for CashDB. Those projects
 have been released under open source licensing terms of their own.
 
 We have:
