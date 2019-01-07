@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CashDB.Lib.Tests": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

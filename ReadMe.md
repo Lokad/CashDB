@@ -1,23 +1,23 @@
-# Terab - UTXO storage backend for Bitcoin Cash
+# CashDB - UTXO storage backend for Bitcoin Cash
 
-Terab delivers a specialized storage dedicated to the UTXO dataset of Bitcoin 
+CashDB delivers a specialized storage dedicated to the UTXO dataset of Bitcoin 
 Cash. This component is intended to support livechain apps [<sup>1</sup>](#1) 
 such as Bitcoin ABC or ElectrumX. As a end-user of Bitcoin, you are not 
-expected to ever interact directly with Terab.
+expected to ever interact directly with CashDB.
 
-Terab follows a classic client-server design. The server side of Terab is 
+CashDB follows a classic client-server design. The server side of CashDB is 
 implemented in C# over .NET Core 2.1. The client side is implemented in C. 
-The API includes a list of methods and structures defined in `terab.h`.
+The API includes a list of methods and structures defined in `cashdb.h`.
 
 ## Motivation
 
-The prime focus of Terab is _performance_. Terab seeks to max-out both the 
+The prime focus of CashDB is _performance_. CashDB seeks to max-out both the 
 storage and I/O capabilities of modern hardware, namely SSD and Optane. 
-Terab moves away from the historic Bitcoin implementation which relies on a 
+CashDB moves away from the historic Bitcoin implementation which relies on a 
 _block-do+block-undo_ pattern. 
 
-With Terab, it remains possible to implement a  _block-do+block-undo_ pattern, 
-but the block-centric approach adopated by Terab provides constant-time chain 
+With CashDB, it remains possible to implement a  _block-do+block-undo_ pattern, 
+but the block-centric approach adopated by CashDB provides constant-time chain 
 reorg, which is of interest for production systems.
 
 ## Storage overview
@@ -29,50 +29,50 @@ structures. Yet, the longest-chain mining rule ensures that tree-like
 properties of the blockchain does not, and instead always resolve to a linked 
 list of blocks.
 
-The Terab API is explicitly taking advantage of this blockchain by making sure 
+The CashDB API is explicitly taking advantage of this blockchain by making sure 
 that the API itself does not stand in the way of highly optimized implementation.
 
-The "UTXO" storage of Terab (UTXO standing for _unspent transaction outputs_) 
+The "UTXO" storage of CashDB (UTXO standing for _unspent transaction outputs_) 
 would actually be better qualified as an hybrid storage between:
 
 * a UTXO storage - which only keep unspent outputs.
 * a TXO storage - which would keep all outputs.
 
 For all the blocks that are no further than 100 blocks away from the longest 
-chain ever stored in Terab, the entire UTXO set is available for query; but 
+chain ever stored in CashDB, the entire UTXO set is available for query; but 
 also all the coin consumptions that did happen through those blocks. This 
-property of Terab ensures that a miner can correctly assess if an output is 
+property of CashDB ensures that a miner can correctly assess if an output is 
 truly unspent or not.
 
-The 100 blocks cut-off rule of Terab is aligned with the transaction validation
+The 100 blocks cut-off rule of CashDB is aligned with the transaction validation
 rule that prevents coinbase transactions to be spent for 100 blocks.
 
 Restricting the read queries to more recent blocks also ensure that old 
 transactions outputs that have been spent can be fully pruned from the physical 
-data storage that supports Terab. To further clarify, while reading "recent" 
+data storage that supports CashDB. To further clarify, while reading "recent" 
 block, the API can well return "old" outputs, well beyond the last 100 blocks.
 
-Also, as the Terab API exposes some methods that are guaranteed to be _pure_, 
-returning immutable results, the Terab API does prevent any coin to be pruned 
+Also, as the CashDB API exposes some methods that are guaranteed to be _pure_, 
+returning immutable results, the CashDB API does prevent any coin to be pruned 
 for 200 blocks.
 
 ## Durability at the block level
 
 Coping with the I/O throughput is one of the major challenged faced by an 
-implementation of the Terab  API. Terab addresses this challenge upfront by 
+implementation of the CashDB  API. CashDB addresses this challenge upfront by 
 adopting a rather specific approach to 
 [durability](https://en.wikipedia.org/wiki/Durability_(database_systems)).
 
 Writes made to the API are only guaranteed to be durable once a block is 
 _committed_ through the API. This leads to an API design were blocks are first
 _opened_ and finally _committed_. In case of a power failure or other transient
-failure bringing down the whole Terab system, only committed blocks are 
+failure bringing down the whole CashDB system, only committed blocks are 
 guaranteed to be retrievable. 
 
-This design offers the possibility to Terab implementations to largely mitigate
+This design offers the possibility to CashDB implementations to largely mitigate
 the I/O challenge by keeping the most recent entries in non-durable memory.
 
-In practice, Terab does not imply that committing a block will be treated a 
+In practice, CashDB does not imply that committing a block will be treated a 
 single monolithic operation. Implementations are expected to try flushing 
 incoming data to durable storage as soon as possible, but not offering 
 durability guarantees before the block commit.
@@ -101,13 +101,13 @@ The intent associated to _idempotent_ methods is to support _write_ methods,
 which can be safely retried through retry-policies, which are, in practice, 
 required when designing distributed systems.
 
-(*) Our terminology is slightly adjusted to the specific requirements of Terab.
+(*) Our terminology is slightly adjusted to the specific requirements of CashDB.
 In the literature, you may find slightly different interpretations of those 
 terms.
 
 ## Strictly append-only
 
-The API of Terab is strictly append-only. It does not offer any mechanism to 
+The API of CashDB is strictly append-only. It does not offer any mechanism to 
 re-write previously written data. This design is intentional.
 
 * It prevents entire classes of mistakes from being made with the other Bitcoin
@@ -117,7 +117,7 @@ micro-services which populate and consume the present API.
 would otherwise be much more difficult if the data was mutable.
 * It vastly reduces the surface-attack area of the micro-service itself. An
 attacker could still [brick](https://en.wikipedia.org/wiki/Brick_(electronics))
-a Terab instance, but not rewrite the past, not through the API itself (*). 
+a CashDB instance, but not rewrite the past, not through the API itself (*). 
 
 (*) With sufficient system privilege, all hacks remain possible; however, a 
 defense in-depth design not only complicate the hack, but also makes it vastly
@@ -135,12 +135,12 @@ the sole responsibility of the client to manage its memory.
 
 ## Capacity limits of methods
 
-Most methods offered by Terab offer the possibility to perform many read/write 
+Most methods offered by CashDB offer the possibility to perform many read/write 
 at once, typically by passing one or more arrays as part of the request. This 
 design is intentional as chatty APIs do not scale well due to latency problems.
 
-Yet, Terab cannot offer predicable performance over arbitrary large requests. 
-Thus, a Terab instance should specify through its nominal configuration the
+Yet, CashDB cannot offer predicable performance over arbitrary large requests. 
+Thus, a CashDB instance should specify through its nominal configuration the
 maximal number of TXOs which can be read or written in a single method call.
 
 ## Error codes
@@ -153,10 +153,10 @@ through a failing method call, beyond the error code itself.
 There are three broad classes of problems that can be encountered:
 
 * **Broken client**: The client implementation needs a fix.
-* **Broken service**: The Terab implementation needs a fix.
+* **Broken service**: The CashDB implementation needs a fix.
 * **Misc. happens**: A hardware problem or an IT problem is causing a malfunction.
 
-Terab ensures that all failing method calls have no observable side-effect on 
+CashDB ensures that all failing method calls have no observable side-effect on 
 the state of the system.
 
 

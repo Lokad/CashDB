@@ -1,12 +1,12 @@
-# Terab - Contributing
+# CashDB - Contributing
 
-The Terab project is functional, yet several areas could still be greatly 
+The CashDB project is functional, yet several areas could still be greatly 
 improved. This document lists the areas of prime interest for further
 contributions.
 
 ## Loads of tests
 
-Terab already includes its suite of unit tests, however, the quantity (and
+CashDB already includes its suite of unit tests, however, the quantity (and
 quality) of our testing suite is not as high as we would like it to be. The
 project would quite a few more regression tests in order to vetted as production
 ready.
@@ -15,7 +15,7 @@ ready.
 
 Currently, the client-server connection is merely a naked TCP socket with
 no authentification and not transport encryption. Those features would be
-desirable to add to Terab. It is suggested to adopt cryptographic primitives
+desirable to add to CashDB. It is suggested to adopt cryptographic primitives
 that are already used in Bitcoin to minimize the technological mass of
 the solution.
 
@@ -37,7 +37,7 @@ oldest orphaned block still present in the coin storage. In order to keep the
 reasonably close to the tip of the chain - ideally within the last 20,000 blocks
 or so.
 
-While Terab performs a lazy pruning over its coin, there is no explict pruning
+While CashDB performs a lazy pruning over its coin, there is no explict pruning
 that provides the guarantee that could be used to raise `OldestOrphanHeight`.
 
 As this pruning does not need to happen more frequently than once in a couple of
@@ -46,12 +46,12 @@ to shutdown) which is simpler than the online logic.
 
 ## Benchmarking against the real blockchain
 
-The benchmark of Terab is synthetic. While it should be reasonably close from
+The benchmark of CashDB is synthetic. While it should be reasonably close from
 the real thing, performing a real benchmark is of prime interest.
 
 ## Layer's tuning
 
-Terab hasn't been pushed to its single machine limits. In particular, we have not
+CashDB hasn't been pushed to its single machine limits. In particular, we have not
 tried and tested:
 
 - Spread the first layer over two Intel Optane devices - balancing the shards over
@@ -61,7 +61,7 @@ amount of storage for a fixed hardware cost.
 
 ## Utilities
 
-- Storage usage: there is no tool to answer the question "how full" is the Terab 
+- Storage usage: there is no tool to answer the question "how full" is the CashDB 
 instance. Such a tool could be implemented by a simple utility taking samples from
 one of the shard.
 
@@ -70,7 +70,7 @@ from one file layout to another.
 
 ## Burst-write support
 
-Terab does not yet take advantage of the weak durability semantic on coin writes
+CashDB does not yet take advantage of the weak durability semantic on coin writes
 (durable only when "commit block" is called). This could be used to significantly
 improve the burst-writes throughput (although this would not improve the sustained
 throughput).
@@ -97,7 +97,7 @@ direct writes.
 In order to serve wallets, a reverse indexing of the UTXO must be implemented,
 mapping the script hashes back to the coins. 
 
-The design of Terab can be adapted for this purpose. In particular, the reverse
+The design of CashDB can be adapted for this purpose. In particular, the reverse
 indexing can be made much more efficient, as both outpoints and script hashes
 can be re-hashed through SipHash into 64bits digest. Accidental collisions get
 resolved on the UTXO side (but remains rare, hence keeping the overhead 
@@ -105,5 +105,5 @@ negligible).
 
 ## Multi-machine support
 
-The event-driven design of Terab should rather gracefully evolve into a multi-
+The event-driven design of CashDB should rather gracefully evolve into a multi-
 machine setup, however this represents a significant undertaking.

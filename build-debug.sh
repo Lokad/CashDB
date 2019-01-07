@@ -1,6 +1,6 @@
 #/bin/sh
 
-make -C src/Terab.Client debug
+make -C src/CashDB.Client debug
 make -C extern/src/lmdb
-dotnet build -c Debug src/Terab.Linux.sln
+dotnet build -c Debug src/CashDB.Linux.sln
 
