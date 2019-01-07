@@ -9,6 +9,45 @@ CashDB follows a classic client-server design. The server side of CashDB is
 implemented in C# over .NET Core 2.1. The client side is implemented in C. 
 The API includes a list of methods and structures defined in `cashdb.h`.
 
+## Performance
+
+With the following hardware configuration:
+
+* Intel i9-8950HK 2.9GHz, 6 Cores
+* 32GB RAM
+* Intel Optane SSD 900P Series, 280GB
+
+CashDB performs:
+
+* ~120,000 IOPS for a UTXO set of 24GB
+* ~110,000 IOPS for a UTXO set of 256GB
+
+while keeping block commit operations under 1ms.
+
+Here, an "IO" refers to a read or write operation from the UTXO set perspective.
+A vanilla Bitcoin transaction with 2 inputs and 2 ouputs requires 6 IOs to be
+processed: 2 IO to read inputs, 2 IO to update inputs, 2 IO to write outputs. 
+Thus, a single Intel Optane card is expected to support close to 20k transactions
+per second with low cost hardward, i.e. as of January 2019, the Optane card costs
+about 400 USD. Also, as of January 2019, the UTXO set of Bitcoin is about 5GB.
+
+The app `./test/CashDB.Benchmark` can be used to reproduce those results.
+
+## Getting started
+
+Clone the present repository.
+
+Under Windows, open `CashDB.sln` with Microsoft Visual Studio 2017 (or above) and 
+compile.
+
+Under Linux, 
+
+* Install [.NET Core 2.1](https://dotnet.microsoft.com/) or above.
+* Run `./build-releash.sh`
+
+A C/C++ client library `cashdbclient` is produced by the project `/src/CashDB.Client`.
+Check-out `/src/CashDB.Client/cashdb.h` for the intended API of CashDB.
+
 ## Motivation
 
 The prime focus of CashDB is _performance_. CashDB seeks to max-out both the 
@@ -54,7 +93,7 @@ block, the API can well return "old" outputs, well beyond the last 100 blocks.
 
 Also, as the CashDB API exposes some methods that are guaranteed to be _pure_, 
 returning immutable results, the CashDB API does prevent any coin to be pruned 
-for 200 blocks.
+for 100 blocks.
 
 ## Durability at the block level
 
@@ -158,7 +197,6 @@ There are three broad classes of problems that can be encountered:
 
 CashDB ensures that all failing method calls have no observable side-effect on 
 the state of the system.
-
 
 ## References
 
