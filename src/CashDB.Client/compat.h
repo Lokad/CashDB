@@ -41,6 +41,7 @@
 #endif
 
 #ifndef _WIN32
+typedef sa_family_t ADDRESS_FAMILY;
 typedef unsigned int SOCKET;
 #define closesocket close
 #include "errno.h"
