@@ -26,7 +26,7 @@ while keeping block commit operations under 1ms.
 
 Here, an "IO" refers to a read or write operation from the UTXO set perspective.
 A vanilla Bitcoin transaction with 2 inputs and 2 ouputs requires 6 IOs to be
-processed: 2 IO to read inputs, 2 IO to update inputs, 2 IO to write outputs. 
+processed: 2 IOs to read inputs, 2 IOs to update inputs, 2 IOs to write outputs. 
 Thus, a single Intel Optane card is expected to support close to 20k transactions
 per second with low cost hardward, i.e. as of January 2019, the Optane card costs
 about 400 USD. Also, as of January 2019, the UTXO set of Bitcoin is about 5GB.
