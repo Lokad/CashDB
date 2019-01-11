@@ -9,6 +9,8 @@ CashDB follows a classic client-server design. The server side of CashDB is
 implemented in C# over .NET Core 2.1. The client side is implemented in C. 
 The API includes a list of methods and structures defined in `cashdb.h`.
 
+CashDB is released under a non-standard licensing scheme. Check `License.md`, `License-MIT.md` and `License-MIT-BCH.md`.
+
 ## Performance
 
 With the following hardware configuration:
