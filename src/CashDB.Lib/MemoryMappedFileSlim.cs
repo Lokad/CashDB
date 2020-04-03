@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace CashDB.Lib
@@ -35,34 +36,35 @@ namespace CashDB.Lib
         private int _lastLength;
 
         public MemoryMappedFileSlim(string fileNamePath)
+            : this(MemoryMappedFile.CreateFromFile(fileNamePath, FileMode.OpenOrCreate, mapName: null), fileNamePath)
         {
-            _fileName = fileNamePath;
-            _mmf = MemoryMappedFile.CreateFromFile(fileNamePath, FileMode.Open, mapName: null);
-            _mmva = _mmf.CreateViewAccessor();
-            _fileLength = _mmva.Capacity;
-            _mmva.SafeMemoryMappedViewHandle.AcquirePointer(ref _originPtr);
-            _disposed = false;
         }
 
         public MemoryMappedFileSlim(string fileNamePath, long fileLength)
+            : this(MemoryMappedFile.CreateFromFile(fileNamePath, FileMode.OpenOrCreate, mapName: null, capacity: fileLength), fileNamePath)
         {
-            _fileName = fileNamePath;
-            _fileLength = fileLength;
-            _mmf = MemoryMappedFile.CreateFromFile(fileNamePath, FileMode.OpenOrCreate, mapName: null,
-                capacity: fileLength);
-            _mmva = _mmf.CreateViewAccessor();
-            _mmva.SafeMemoryMappedViewHandle.AcquirePointer(ref _originPtr);
-            _disposed = false;
         }
 
         public MemoryMappedFileSlim(MemoryMappedFile mmf)
+            : this( mmf, "Undefined file name.")
         {
-            _fileName = "Undefined file name.";
+        }
+
+        MemoryMappedFileSlim(MemoryMappedFile mmf, string fileNamePath)
+        {
+            _fileName = fileNamePath;
             _mmf = mmf;
             _mmva = _mmf.CreateViewAccessor();
-            _mmva.SafeMemoryMappedViewHandle.AcquirePointer(ref _originPtr);
-            _disposed = false;
             _fileLength = _mmva.Capacity;
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try
+            {
+                _mmva.SafeMemoryMappedViewHandle.AcquirePointer(ref _originPtr);
+            }
+            finally
+            {
+                if (_originPtr != null) _mmva.SafeMemoryMappedViewHandle.ReleasePointer();
+            }
         }
 
         public Span<byte> GetSpan()
@@ -129,35 +131,15 @@ namespace CashDB.Lib
             throw new NotSupportedException($"Platform not supported: {RuntimeInformation.OSDescription}.");
         }
 
-        private void ReleaseUnmanagedResources()
-        {
-            _mmva.SafeMemoryMappedViewHandle.ReleasePointer();
-        }
-
-        private void Dispose(bool disposing)
+        public void Dispose()
         {
             if (!_disposed)
             {
-                ReleaseUnmanagedResources();
-                if (disposing)
-                {
-                    _mmf?.Dispose();
-                    _mmva?.Dispose();
-                }
-
+                Flush();
                 _disposed = true;
+                _mmva.Dispose();
+                _mmf.Dispose();
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        ~MemoryMappedFileSlim()
-        {
-            Dispose(false);
         }
 
         /// <summary> Interop helper. </summary>
